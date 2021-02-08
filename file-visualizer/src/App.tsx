@@ -1,7 +1,7 @@
-import React from 'react';
-import { useState } from 'react';
-import { Card, Form, Spinner, Table } from 'react-bootstrap';
-import './App.css';
+import React from "react";
+import { useState } from "react";
+import { Card, Form, Spinner, Table } from "react-bootstrap";
+import "./App.css";
 
 /* Notes:
    - usage: `Validate a file, and send it to node server for parsing`
@@ -11,7 +11,7 @@ import './App.css';
   */
 
 const App: React.FC = () => {
-  const [loading, setLoading] = useState<Boolean>(false);
+  const [loading, setLoading] = useState<boolean | undefined>(false);
   const [data, setData] = useState<any>();
   const [cols, setCol] = useState<any>();
 
@@ -22,27 +22,31 @@ const App: React.FC = () => {
    - return: `void`
   */
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setLoading(true);
     const files = e.target.files;
     const formData = new FormData();
     if (files && files[0]) {
-      formData.append('file', files[0]);
+      formData.append("file", files[0]);
     }
-    console.log(formData.get('file'));
+    console.log(formData.get("file"));
 
-    fetch('/upload-files', {
-      method: 'POST',
+    //making the fetch request to upload files to backend
+    //sending formData as request body
+    //@return promise{res = res.table{data , cols}}
+    await fetch("/upload-files", {
+      method: "POST",
       body: formData,
     })
       .then((resp) => resp.json())
       .then((data) => {
+        // setting response cols and data to state variables
         setCol(data.table.cols);
         setData(data.table.data);
         console.log(
           JSON.stringify(data.table.cols),
-          'data = ',
+          "data = ",
           JSON.stringify(data.table.data)
         );
       });
@@ -53,12 +57,13 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <form className="form-inline">
-        <div className="form-group p-5">
+        <div className="form-group pl-5 pt-5">
           <Card className="shadow">
             <Card.Body>
               <Form>
                 <Form.Group>
                   <Form.File
+                    disabled={loading}
                     id="file"
                     accept={SheetJSFT}
                     onChange={handleChange}
@@ -70,23 +75,23 @@ const App: React.FC = () => {
         </div>
       </form>
       {loading ? (
-        <div>
-          <Spinner animation="border" className="my-spinner" role="status">
-            <span className="sr-only">Loading...</span>
-          </Spinner>
-          <div className="p-5">
-            <Card>
-              <Card.Body>Please Select a file to continue</Card.Body>
-            </Card>
-          </div>
+        <div className="my-spinner">
+          <Card>
+            <Card.Body>
+              <Spinner animation="border" role="status">
+                <span className="sr-only">Loading...</span>
+              </Spinner>
+              &nbsp; &nbsp;Loading your file...
+            </Card.Body>
+          </Card>
         </div>
       ) : (
         <div className="p-5">
           <Card className="shadow">
-            <Card.Body style={{ maxHeight: 500, overflow: 'auto' }}>
+            <Card.Body style={{ maxHeight: 500, overflow: "auto" }}>
               {cols && data && !loading ? (
-                <Table>
-                  <thead>
+                <Table hover>
+                  <thead style={{ border: "1px solid #2e2e2e" }}>
                     <tr>
                       {cols.map((c: any) => (
                         <th key={c.key}>{c.name}</th>
@@ -123,30 +128,30 @@ const App: React.FC = () => {
    - detail: `Types of files supported by the library`
   */
 const SheetJSFT = [
-  'xlsx',
-  'xlsb',
-  'xlsm',
-  'xls',
-  'xml',
-  'csv',
-  'txt',
-  'ods',
-  'fods',
-  'uos',
-  'sylk',
-  'dif',
-  'dbf',
-  'prn',
-  'qpw',
-  '123',
-  'wb*',
-  'wq*',
-  'html',
-  'htm',
+  "xlsx",
+  "xlsb",
+  "xlsm",
+  "xls",
+  "xml",
+  "csv",
+  "txt",
+  "ods",
+  "fods",
+  "uos",
+  "sylk",
+  "dif",
+  "dbf",
+  "prn",
+  "qpw",
+  "123",
+  "wb*",
+  "wq*",
+  "html",
+  "htm",
 ]
   .map(function (x) {
-    return '.' + x;
+    return "." + x;
   })
-  .join(',');
+  .join(",");
 
 export default App;
